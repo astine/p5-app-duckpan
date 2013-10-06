@@ -19,6 +19,7 @@ sub run {
 
 	exit 1 unless $self->app->check_app_duckpan;
 	exit 1 unless $self->app->check_ddg;
+	exit 1 unless $self->app->check_www_ddg;
 
 	dir($self->app->cfg->cache_path)->mkpath unless -d $self->app->cfg->cache_path;
 

@@ -170,7 +170,7 @@ sub execute {
 				push @modules, $_;
 			} elsif (lc($_) eq 'duckpan' or lc($_) eq 'upgrade') {
 				push @modules, 'App::DuckPAN';
-				push @modules, 'DDG' if lc($_) eq 'upgrade';
+				push @modules, qw(DDG WWW::DuckDuckGo) if lc($_) eq 'upgrade';
 			} else {
 				push @left_args, $_;
 			}
@@ -207,6 +207,7 @@ sub check_requirements {
 	print "\nChecking your environment for the DuckPAN requirements\n\n";
 	#$fail = 1 unless $self->check_locallib;
 	$fail = 1 unless $self->check_ddg;
+	$fail = 1 unless $self->check_www_ddg;
 	$fail = 1 unless $self->check_git;
 	$fail = 1 unless $self->check_ssh;
 	if ($fail) {
@@ -260,6 +261,11 @@ sub get_local_app_duckpan_version {
 	return $self->perl->get_local_version('App::DuckPAN');
 }
 
+sub get_local_www_ddg_version {
+	my ( $self ) = @_;
+	return $self->perl->get_local_version('WWW::DuckDuckGo');
+}
+
 sub check_app_duckpan {
 	my ( $self ) = @_;
 	my $ok = 1;
@@ -310,6 +316,37 @@ sub check_ddg {
 				print "You don't have DDG installed! Latest is ".$module->version."!\n";
 			}
 			print "[ERROR] Please install the latest DDG package with: duckpan DDG\n";
+			$ok = 0;
+		}
+	} else {
+		print "[ERROR] Can't download ".$self->duckpan_packages;
+		$ok = 0;
+	}
+	print "\n";
+	return $ok;
+}
+
+sub check_www_ddg {
+	my ( $self ) = @_;
+	my $ok = 1;
+	my $installed_version = $self->get_local_www_ddg_version;
+	return $ok if $installed_version && $installed_version == '9.999';
+	print "Checking for latest WWW::DuckDuckGo Perl package... ";
+	my $tempfile = tmpnam;
+	if (is_success(getstore($self->duckpan_packages,$tempfile))) {
+		my $packages = Parse::CPAN::Packages::Fast->new($tempfile);
+		my $module = $packages->package('WWW::DuckDuckGo');
+		my $latest = $self->duckpan.'authors/id/'.$module->distribution->pathname;
+		if ($installed_version && version->parse($installed_version) >= version->parse($module->version)) {
+			print $installed_version;
+			print " (duckpan has ".$module->version.")" if $installed_version ne $module->version;
+		} else {
+			if ($installed_version) {
+				print "You have version ".$installed_version.", latest is ".$module->version."!\n";
+			} else {
+				print "You don't have WWW::DuckDuckGo installed! Latest is ".$module->version."!\n";
+			}
+			print "[ERROR] Please install the latest WWW::DuckDuckGo package with: duckpan DDG\n";
 			$ok = 0;
 		}
 	} else {
