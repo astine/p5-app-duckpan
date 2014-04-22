@@ -178,10 +178,10 @@ sub run {
 }
 
 # Force DuckPAN to ignore requests for certain files
-# that are not needed (ie. d.js, s.js, g.js, post2.html)
+# that are not needed (ie. d.js, s.js, g.js, post2.html, duckduckpan.js)
 sub change_js {
 	my ( $self, $js ) = @_;
-	$js =~ s!/([dsg])\.js\?!/?duckduckhack_ignore=1&!g;
+	$js =~ s!/([dsg]|duckduckpan)\.js\?!/?duckduckhack_ignore=1&!g;
 	$js =~ s!/post2\.html!/?duckduckhack_ignore=1&!g;
 	return $self->change_css($js);
 }
@@ -233,7 +233,7 @@ sub change_html {
 	for (@script) {
 		if (my $src = $_->attr('src')) {
 
-			if ($src =~ m/^\/d\d+\.js/) {
+			if ($src =~ m/^\/duckduckpan.js/) {
 				$_->attr('src','/?duckduckhack_js=1');
 
 			} elsif ($src =~ m/^\/g\d+\.js/) {
@@ -281,10 +281,10 @@ sub get_assets {
 		"_tag", "link"
 	);
 
-	# Find version no. for d.js and g.js
+	# Find version no. for duckduckpan.js and g.js
 	for (@script) {
 		if (my $src = $_->attr('src')) {
-			if ($src =~ m/^\/(d\d+\.js)/) {
+			if ($src =~ m/^\/(duckduckpan\.js)/) {
 				$self->page_js_filename($1);
 			}
 
